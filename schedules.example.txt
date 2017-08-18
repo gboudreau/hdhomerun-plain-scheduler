@@ -1,0 +1,23 @@
+Record
+    serie       Game of Thrones
+    episode     S7E08
+        named   The Final FINAL episode
+    on channel  17.1
+    on date     2017-08-19
+    at          09:00
+    duration    1h07m
+    save to     /path/to/recordings/
+
+Record
+    serie       Suits
+    episode     S9E19
+        named   Meh Testing
+    on channel  15.1
+    on date     2017-08-26
+    at          20:00
+    duration    56m
+    save to     /path/to/recordings/
+
+# Comments lines start with # or ;
+# You can't put comments at the end of any line containing useful information
+# Example:     save to    /path/to/recordings/    # Don't do this!
