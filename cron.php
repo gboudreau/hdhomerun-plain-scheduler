@@ -11,3 +11,10 @@ foreach ($parser->getRecordings() as $recording) {
         $recording->startRecordingThread();
     }
 }
+
+// If any recording is complete, remove it from the schedules file
+foreach ($parser->getRecordings() as $recording) {
+    if ($recording->isComplete()) {
+        $recording->removeFromSchedulesFile();
+    }
+}

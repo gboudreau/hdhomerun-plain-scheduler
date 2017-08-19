@@ -12,7 +12,8 @@ class Recording
     private $_duration;
     private $_save_to_path;
 
-    private $_start_line_mnumber;
+    private $_start_line_number;
+    private $_end_line_number;
 
     public function __construct() {
     }
@@ -59,9 +60,11 @@ class Recording
     ];
 
     public function addLine(string $line, int $line_number) {
-        if (empty($this->_start_line_mnumber)) {
-            $this->_start_line_mnumber = $line_number - 1;
+        if (empty($this->_start_line_number)) {
+            $this->_start_line_number = $line_number - 1;
         }
+        $this->_end_line_number = $line_number;
+
         $matched = FALSE;
         foreach (static::$_patterns as $pattern => $var_name) {
             if (preg_match('/^\s*' . $pattern . '\s+(.*)$/', $line, $re)) {
@@ -77,12 +80,12 @@ class Recording
     public function validate() {
         // Check that duration format is OK
         if (empty($this->_duration)) {
-            throw new \Exception("Error: missing 'duration' row in Record block starting at line $this->_start_line_mnumber. Skipping this Record block.");
+            throw new \Exception("Error: missing 'duration' row in Record block starting at line $this->_start_line_number. Skipping this Record block.");
         }
         $this->_getDurationInSeconds();
 
         if (empty($this->_serie)) {
-            throw new \Exception("Error: missing 'serie' row in Record block starting at line $this->_start_line_mnumber. Skipping this Record block.");
+            throw new \Exception("Error: missing 'serie' row in Record block starting at line $this->_start_line_number. Skipping this Record block.");
         }
 
         if (empty($this->_episode)) {
@@ -90,20 +93,20 @@ class Recording
         }
 
         if (empty($this->_channel)) {
-            throw new \Exception("Error: missing 'on channel' row in Record block starting at line $this->_start_line_mnumber. Skipping this Record block.");
+            throw new \Exception("Error: missing 'on channel' row in Record block starting at line $this->_start_line_number. Skipping this Record block.");
         }
 
         if (empty($this->_date)) {
-            throw new \Exception("Error: missing 'on date' row in Record block starting at line $this->_start_line_mnumber. Skipping this Record block.");
+            throw new \Exception("Error: missing 'on date' row in Record block starting at line $this->_start_line_number. Skipping this Record block.");
         }
 
         if (empty($this->_time)) {
-            throw new \Exception("Error: missing 'at' row in Record block starting at line $this->_start_line_mnumber. Skipping this Record block.");
+            throw new \Exception("Error: missing 'at' row in Record block starting at line $this->_start_line_number. Skipping this Record block.");
         }
 
         if (empty($this->_save_to_path)) {
             if (!Config::get('DEFAULT_SAVE_TO_PATH')) {
-                throw new \Exception("Error: missing 'save to' row in Record block starting at line $this->_start_line_mnumber. Skipping this Record block.");
+                throw new \Exception("Error: missing 'save to' row in Record block starting at line $this->_start_line_number. Skipping this Record block.");
             }
             $this->_save_to_path = Config::get('DEFAULT_SAVE_TO_PATH');
         }
@@ -242,5 +245,17 @@ class Recording
             _log("Error: recording failed! No temporary file found at $temp_path");
         }
         _log("Done.");
+    }
+
+    public function removeFromSchedulesFile() {
+        _log("Removing Record Block (" . $this->getHash() . ") from schedules file: lines $this->_start_line_number to $this->_end_line_number");
+        $schedules = explode("\n", file_get_contents(Config::get('SCHEDULES_FILE')));
+        $new_schedules = [];
+        for ($l = 0; $l<count($schedules); $l++) {
+            if ($l < $this->_start_line_number-1 || $l > $this->_end_line_number-1) {
+                $new_schedules[] = $schedules[$l];
+            }
+        }
+        file_put_contents(Config::get('SCHEDULES_FILE'), implode("\n", $new_schedules));
     }
 }
