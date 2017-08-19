@@ -18,7 +18,7 @@ class Recording
     }
 
     public function __toString() : string {
-        return sprintf("Recording {\n\t%s %s %s\n\tchannel: %s\n\tdate: %s %s\n\tduration: %s\n\tsave to: %s\n\t\tthen move to: %s\n}", $this->_serie, $this->_episode, $this->_episode_name, $this->_channel, $this->_date, $this->_time, $this->_duration, $this->getTempPath(), $this->getFullPath());
+        return sprintf("Recording {\n\t%s %s %s\n\tchannel: %s\n\tdate: %s %s\n\tduration: %s\n\tsave to: %s\n\t\tthen move to: %s\n}", $this->_serie, $this->_episode, $this->_episode_name, $this->_channel, $this->_date, $this->_time, $this->_getDurationAsString(), $this->getTempPath(), $this->getFullPath());
     }
 
     public function getTempPath() : string {
@@ -101,10 +101,6 @@ class Recording
             throw new \Exception("Error: missing 'at' row in Record block starting at line $this->_start_line_mnumber. Skipping this Record block.");
         }
 
-        if (empty($this->_duration)) {
-            throw new \Exception("Error: missing 'duration' row in Record block starting at line $this->_start_line_mnumber. Skipping this Record block.");
-        }
-
         if (empty($this->_save_to_path)) {
             if (!Config::get('DEFAULT_SAVE_TO_PATH')) {
                 throw new \Exception("Error: missing 'save to' row in Record block starting at line $this->_start_line_mnumber. Skipping this Record block.");
@@ -113,25 +109,38 @@ class Recording
         }
     }
 
-    public function startsNow(bool $quiet = FALSE) : bool {
-        $starts_ts = strtotime($this->_date . ' ' . $this->_time);
-        $starts_in_the_past = $starts_ts < time();
-        $starts_soon = !$starts_in_the_past && $starts_ts <= time() + 59;
+    private function _getStartTimestamp() : int {
+        // @TODO Allow recurring recordings
+        return strtotime($this->_date . ' ' . $this->_time);
+    }
+
+    public function isComplete() : bool {
+        $end_ts = $this->_getStartTimestamp() + $this->_getDurationInSeconds();
+        return ( $end_ts <= time() );
+    }
+
+    public function startsNow() : bool {
+        $starts_ts = $this->_getStartTimestamp();
+
+        // Recordings starts 1m early
+        $starts_soon = $starts_ts >= time() && $starts_ts <= time() + 60;
         if ($starts_soon) {
-            // Recordings starts 1m early
-            $this->_duration = (($starts_ts + $this->_getDurationInSeconds()) - time()) . 's';
             return TRUE;
         }
-        $ended = $starts_ts + $this->_getDurationInSeconds() <= time();
-        if ($starts_in_the_past && !$ended) {
-            // If show started in the past, adjust _duration as needed
-            $this->_duration = (($starts_ts + $this->_getDurationInSeconds()) - time()) . 's';
-            if (!$quiet) {
-                _log("Warning: schedule starts in the past; adjusting duration to $this->_duration.");
-            }
+
+        // Start the recording midway, if we somehow missed the above start
+        $starts_in_the_past = $starts_ts < time();
+        if ($starts_in_the_past && !$this->isComplete()) {
             return TRUE;
         }
+
         return FALSE;
+    }
+
+    private function _adjustDurationToStartRecordingNow(bool $quiet = FALSE) {
+        $end_ts = $this->_getStartTimestamp() + $this->_getDurationInSeconds();
+        $duration_in_secs = $end_ts - time();
+        $this->_duration = $duration_in_secs . 's';
     }
 
     private function _getDurationInSeconds() : int {
@@ -147,6 +156,25 @@ class Recording
         }
         if (empty($duration)) {
             throw new \Exception("Error: couldn't parse duration value '$this->_duration'; expected format: XhXmXs");
+        }
+        return $duration;
+    }
+
+    private function _getDurationAsString() : string {
+        $duration_in_secs = $this->_getDurationInSeconds();
+        $duration = '';
+        if ($duration_in_secs >= 60*60) {
+            $hours = floor($duration_in_secs / (60*60));
+            $duration .= $hours . 'h';
+            $duration_in_secs -= $hours * 60*60;
+        }
+        if ($duration_in_secs >= 60) {
+            $minutes = floor($duration_in_secs / 60);
+            $duration .= $minutes . 'm';
+            $duration_in_secs -= $minutes * 60;
+        }
+        if ($duration_in_secs > 0) {
+            $duration .= $duration_in_secs . 's';
         }
         return $duration;
     }
@@ -167,16 +195,12 @@ class Recording
     }
 
     public function startRecording() {
-        // Adjust _duration as needed
-        $this->startsNow();
 
         $temp_path = $this->getTempPath();
-
         if (file_exists($temp_path)) {
             // Recording is already ongoing
             return;
         }
-
         $folder = dirname($temp_path);
         if (!is_dir($folder)) {
             mkdir($folder, 0755, TRUE);
@@ -184,6 +208,10 @@ class Recording
 
 
         _log("================================================================================", TRUE);
+
+        // Adjust _duration as needed
+        $this->_adjustDurationToStartRecordingNow();
+
         $hdhomerun_url = 'http://' . Config::get('HDHOMERUN_IP_ADDRESS') . ':5004/auto/v' . $this->_channel . '?duration=' . $this->_getDurationInSeconds();
         // @TODO Add optional transcoding parameter
 
