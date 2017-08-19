@@ -182,6 +182,8 @@ class Recording
             mkdir($folder, 0755, TRUE);
         }
 
+
+        _log("================================================================================", TRUE);
         $hdhomerun_url = 'http://' . Config::get('HDHOMERUN_IP_ADDRESS') . ':5004/auto/v' . $this->_channel . '?duration=' . $this->_getDurationInSeconds();
         // @TODO Add optional transcoding parameter
 

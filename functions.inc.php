@@ -71,14 +71,16 @@ function clean_dir_name($dir_name) {
     return str_replace(DIRECTORY_SEPARATOR . DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR, $dir_name);
 }
 
-function _log($log) {
+function _log(string $log, bool $skip_prefix = FALSE) {
     $success = FALSE;
-    if (defined('RECORDING_HASH')) {
-        $log = "[record-" . RECORDING_HASH . "] $log";
-    } else {
-        $log = "[cron] $log";
+    if (!$skip_prefix) {
+        if (defined('RECORDING_HASH')) {
+            $log = "[record-" . RECORDING_HASH . "] $log";
+        } else {
+            $log = "[cron] $log";
+        }
+        $log = "[" . date('Y-m-d H:i:s') . "] $log";
     }
-    $log = "[" . date('Y-m-d H:i:s') . "] $log";
     $log_file = Config::get('LOG_FILE');
     if ($log_file) {
         // Log to file
