@@ -10,6 +10,10 @@ $CONFIG->SCHEDULES_FILE = './schedules.txt';
 // Find it on your router admin page. or using: `hdhomerun_config discover`
 $CONFIG->HDHOMERUN_IP_ADDRESS = '192.168.0.100';
 
+// Path that will be used to temporarily save recorded streams, until they end
+// If not specified, then a .grab folder inside the save_to folder will be used
+$CONFIG->TEMP_PATH = '/path/to/temp/folder';
+
 // Path used when you don't specify a 'save to' row in a Record block
 $CONFIG->DEFAULT_SAVE_TO_PATH = '/path/to/recordings/';
 

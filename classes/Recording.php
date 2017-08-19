@@ -22,9 +22,12 @@ class Recording
     }
 
     public function getTempPath() : string {
-        $folder = clean_dir_name($this->_save_to_path . DIRECTORY_SEPARATOR . ".grab");
+        $folder = Config::get('TEMP_PATH');
+        if (!$folder) {
+            $folder = $this->_save_to_path . DIRECTORY_SEPARATOR . ".grab";
+        }
         $filename = basename($this->getFullPath());
-        return $folder . DIRECTORY_SEPARATOR . $filename;
+        return clean_dir_name($folder . DIRECTORY_SEPARATOR . $filename);
     }
 
     public function getFullPath(bool $include_extension = TRUE) : string {
