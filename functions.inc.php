@@ -81,6 +81,7 @@ function _log(string $log, bool $skip_prefix = FALSE) {
         }
         $log = "[" . date('Y-m-d H:i:s') . "] $log";
     }
+    $log = str_replace("\t", "  ", $log);
     $log_file = Config::get('LOG_FILE');
     if ($log_file) {
         // Log to file
