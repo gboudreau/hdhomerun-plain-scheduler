@@ -12,14 +12,64 @@ class Recording
     private $_duration;
     private $_save_to_path;
 
+    private $_hash;
+    protected $_status = 'Scheduled';
+
     private $_start_line_number;
     private $_end_line_number;
 
-    public function __construct() {
+    public function __construct($hash = NULL) {
+        $this->_hash = $hash;
+    }
+
+    public static function create($serie, $episode, $episode_name, $channel, $date_time, $duration, $save_to) : self {
+        $r = new Recording();
+        $r->_serie = $serie;
+        if (!empty($episode)) {
+            $r->_episode = $episode;
+        }
+        if (!empty($episode_name)) {
+            $r->_episode_name = $episode_name;
+        }
+        $r->_channel = $channel;
+        $r->_date = substr($date_time, 0, 10);
+        $r->_time = substr($date_time, 11);
+        $r->_duration = $duration;
+        if (!empty($episode_name)) {
+            $r->_save_to_path = $save_to;
+        }
+        return $r;
     }
 
     public function __toString() : string {
-        return sprintf("Recording {\n\t%s %s %s\n\tchannel: %s\n\tdate: %s %s\n\tduration: %s\n\tsave to: %s\n\t\tthen move to: %s\n}", $this->_serie, $this->_episode, $this->_episode_name, $this->_channel, $this->_date, $this->_time, $this->_getDurationAsString(), $this->getTempPath(), $this->getFullPath());
+        $record_block = "Record\n";
+        $record_block .= sprintf("\tserie  %s\n", $this->_serie);
+        if (!empty($this->_episode)) {
+            $record_block .= sprintf("\tepisode  %s\n", $this->_episode);
+        }
+        if (!empty($this->_episode_name)) {
+            $record_block .= sprintf("\t\tnamed %s\n", $this->_episode_name);
+        }
+        $record_block .= sprintf("\ton channel  %s\n", $this->_channel);
+        $record_block .= sprintf("\ton date  %s\n", $this->_date);
+        $record_block .= sprintf("\tat  %s\n", $this->_time);
+        $record_block .= sprintf("\tduration  %s\n", $this->getDurationAsString());
+        if (!empty($this->_save_to_path)) {
+            $record_block .= sprintf("\tsave to  %s\n", $this->_save_to_path);
+        }
+        return $record_block;
+    }
+
+    public function getName() : string {
+        return trim(sprintf("%s %s %s", $this->_serie, $this->_episode, $this->_episode_name));
+    }
+
+    public function getChannel() : string {
+        return $this->_channel . '';
+    }
+
+    public function getStatus() {
+        return $this->_status;
     }
 
     public function getTempPath() : string {
@@ -48,7 +98,7 @@ class Recording
         );
     }
 
-    private static $_patterns = [
+    protected static $_patterns = [
         'serie' => '_serie',
         'episode' => '_episode',
         'named' => '_episode_name',
@@ -59,7 +109,7 @@ class Recording
         'save to' => '_save_to_path',
     ];
 
-    public function addLine(string $line, int $line_number) {
+    public function addLine(string $line, int $line_number, bool $quiet = FALSE) {
         if (empty($this->_start_line_number)) {
             $this->_start_line_number = $line_number - 1;
         }
@@ -112,18 +162,18 @@ class Recording
         }
     }
 
-    private function _getStartTimestamp() : int {
+    public function getStartTimestamp() : int {
         // @TODO Allow recurring recordings
         return strtotime($this->_date . ' ' . $this->_time);
     }
 
     public function isComplete() : bool {
-        $end_ts = $this->_getStartTimestamp() + $this->_getDurationInSeconds();
+        $end_ts = $this->getStartTimestamp() + $this->_getDurationInSeconds();
         return ( $end_ts <= time() );
     }
 
     public function startsNow() : bool {
-        $starts_ts = $this->_getStartTimestamp();
+        $starts_ts = $this->getStartTimestamp();
 
         // Recordings starts 1m early
         $starts_soon = $starts_ts >= time() && $starts_ts <= time() + 60;
@@ -141,7 +191,7 @@ class Recording
     }
 
     private function _adjustDurationToStartRecordingNow(bool $quiet = FALSE) {
-        $end_ts = $this->_getStartTimestamp() + $this->_getDurationInSeconds();
+        $end_ts = $this->getStartTimestamp() + $this->_getDurationInSeconds();
         $duration_in_secs = $end_ts - time();
         $this->_duration = $duration_in_secs . 's';
     }
@@ -163,7 +213,7 @@ class Recording
         return $duration;
     }
 
-    private function _getDurationAsString() : string {
+    public function getDurationAsString() : string {
         $duration_in_secs = $this->_getDurationInSeconds();
         $duration = '';
         if ($duration_in_secs >= 60*60) {
@@ -194,7 +244,10 @@ class Recording
     }
 
     public function getHash() : string {
-        return md5($this->_serie . $this->_episode . $this->_date . $this->_time . $this->_channel . $this->_save_to_path);
+        if (empty($this->_hash)) {
+            $this->_hash = md5($this->_serie . $this->_episode . $this->_date . $this->_time . $this->_channel . $this->_save_to_path);
+        }
+        return $this->_hash;
     }
 
     public function startRecording() {
@@ -220,7 +273,7 @@ class Recording
 
         $cmd = "curl -so " . escapeshellarg($temp_path) . " " . escapeshellarg($hdhomerun_url);
 
-        _log("Starting Recording: " . $this);
+        _log("Starting Recording:\n" . trim($this));
         _log("Record command: $cmd");
 
         exec($cmd, $output, $return);
@@ -247,6 +300,15 @@ class Recording
         _log("Done.");
     }
 
+    public function addToSchedulesFile() {
+        $schedules = file_get_contents(Config::get('SCHEDULES_FILE'));
+        $schedules .= "\n" . $this;
+        $success = file_put_contents(Config::get('SCHEDULES_FILE'), $schedules);
+        if (!$success) {
+            throw new \Exception("Failed to write to schedules file at " . Config::get('SCHEDULES_FILE'));
+        }
+    }
+
     public function removeFromSchedulesFile() {
         _log("Removing Record Block (" . $this->getHash() . ") from schedules file: lines $this->_start_line_number to $this->_end_line_number");
         $schedules = explode("\n", file_get_contents(Config::get('SCHEDULES_FILE')));
@@ -257,5 +319,14 @@ class Recording
             }
         }
         file_put_contents(Config::get('SCHEDULES_FILE'), implode("\n", $new_schedules));
+    }
+
+    public static function sortByDateTime(self $r1, self $r2) : int {
+        $starts_ts1 = $r1->getStartTimestamp();
+        $starts_ts2 = $r2->getStartTimestamp();
+        if ($starts_ts1 != $starts_ts2) {
+            return ( $starts_ts1 < $starts_ts2 ? -1 : 1 );
+        }
+        return 0;
     }
 }

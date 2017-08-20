@@ -92,3 +92,34 @@ function _log(string $log, bool $skip_prefix = FALSE) {
         error_log($log);
     }
 }
+
+function he($text) {
+    $text = str_replace('&nbsp;', 0x0a00, $text);
+    $text = htmlentities($text, ENT_COMPAT|ENT_QUOTES, 'UTF-8');
+    $text = str_replace(0x0a00, '&nbsp;', $text);
+    return $text;
+}
+
+function rhe($text) {
+    return html_entity_decode($text, ENT_COMPAT|ENT_QUOTES, 'UTF-8');
+}
+
+function phe($text) {
+    echo he($text);
+}
+
+function js($text) {
+    return str_replace("'", "\\'", $text);
+}
+
+function pjs($text) {
+    echo js($text);
+}
+
+function echo_if($condition, $text_if_true, $text_if_false = '') {
+    if ($condition) {
+        echo $text_if_true;
+    } else {
+        echo $text_if_false;
+    }
+}

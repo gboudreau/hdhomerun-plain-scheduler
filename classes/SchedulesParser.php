@@ -35,7 +35,7 @@ class SchedulesParser
                 continue;
             }
 
-            if (strtolower(trim($line)) == 'record') {
+            if (strtolower($line) == 'record') {
                 // Previous record bock ended (if any)
                 $this->_finishRecording();
 
