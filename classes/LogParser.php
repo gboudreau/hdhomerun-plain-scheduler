@@ -43,6 +43,7 @@ class LogParser
             if (string_ends_with($line, 'Starting Recording:')) {
                 if (!empty($hash)) {
                     $this->_recordings[$hash] = new LoggedRecording($hash);
+                    $this->_recordings[$hash]->setStatus('Recording...');
                     $in_error = FALSE;
                 }
                 continue;
@@ -52,10 +53,7 @@ class LogParser
                 continue;
             } elseif ($in_error) {
                 continue;
-            } elseif (string_contains($line, 'Record command')) {
-                $this->_recordings[$hash]->setStatus('Recording...');
-                continue;
-            } elseif (string_contains($line, 'Command (curl) completed successfully') || string_contains($line, 'Moving file from')) {
+            } elseif (string_contains($line, 'Curl completed successfully') || string_contains($line, 'Moving file from')) {
                 $this->_recordings[$hash]->setStatus('Recording Completed - Moving');
                 continue;
             } elseif (string_contains($line, 'Done.')) {

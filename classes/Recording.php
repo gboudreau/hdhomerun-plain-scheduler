@@ -274,21 +274,24 @@ class Recording
         $hdhomerun_url = 'http://' . Config::get('HDHOMERUN_IP_ADDRESS') . ':5004/auto/v' . $this->_channel . '?duration=' . $this->_getDurationInSeconds();
         // @TODO Add optional transcoding parameter
 
-        $cmd = "curl -so " . escapeshellarg($temp_path) . " " . escapeshellarg($hdhomerun_url);
-
         _log("Starting Recording:\n" . trim($this));
-        _log("Record command: $cmd");
 
-        exec($cmd, $output, $return);
+        $fp = fopen($temp_path, 'w');
 
-        if ($return === 0) {
-            _log("Command (curl) completed successfully (return value = 0)");
+        $ch = curl_init($hdhomerun_url);
+        curl_setopt($ch, CURLOPT_FILE, $fp);
+        $success = curl_exec($ch);
+
+        if ($success) {
+            _log("Curl completed successfully");
         } else {
-            _log("Error: curl command exited with value $return");
-            _log("  Command output: " . implode("\n", $output));
+            _log("Error: curl command error: [" . curl_errno($ch) . "] " . curl_error($ch));
         }
 
-        if (file_exists($temp_path)) {
+        fclose($fp);
+        curl_close($ch);
+
+        if (file_exists($temp_path) && filesize($temp_path) > 0) {
             $final_path = $this->getFullPath();
             _log("Moving file from $temp_path to $final_path");
             if (!is_dir(dirname($final_path))) {
@@ -298,7 +301,12 @@ class Recording
                 _log("Error: couldn't move temporary file from $temp_path to $final_path");
             }
         } else {
-            _log("Error: recording failed! No temporary file found at $temp_path");
+            if (file_exists($temp_path)) {
+                _log("Error: recording failed! Empty file found at $temp_path (deleting)");
+                unlink($temp_path);
+            } else {
+                _log("Error: recording failed! No temporary file found at $temp_path");
+            }
         }
         _log("Done.");
     }
