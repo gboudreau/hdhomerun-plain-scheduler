@@ -21,6 +21,7 @@ class LogParser
      */
     private function _parse() {
         $line_number = 0;
+        $in_error = FALSE;
         foreach (explode("\n", $this->_log_text) as $line) {
             $line_number++;
             $line = trim($line);
@@ -42,23 +43,28 @@ class LogParser
             if (string_ends_with($line, 'Starting Recording:')) {
                 if (!empty($hash)) {
                     $this->_recordings[$hash] = new LoggedRecording($hash);
+                    $in_error = FALSE;
                 }
                 continue;
             } elseif ($line == 'Record') {
                 continue;
             } elseif (string_contains($line, 'Removing Record Block')) {
                 continue;
+            } elseif ($in_error) {
+                continue;
             } elseif (string_contains($line, 'Record command')) {
                 $this->_recordings[$hash]->setStatus('Recording...');
                 continue;
-            } elseif (string_contains($line, 'Command completed successfully') || string_contains($line, 'Moving file from')) {
+            } elseif (string_contains($line, 'Command (curl) completed successfully') || string_contains($line, 'Moving file from')) {
                 $this->_recordings[$hash]->setStatus('Recording Completed - Moving');
                 continue;
             } elseif (string_contains($line, 'Done.')) {
                 $this->_recordings[$hash]->setStatus('Recording Completed');
                 continue;
+            } elseif (string_contains($line, 'Error: ')) {
+                $this->_recordings[$hash]->setStatus(substr($line, strpos($line, 'Error: ')));
+                $in_error = TRUE;
             }
-
             if (empty($this->_recordings[$hash])) {
                 throw new \Exception("Fatal error: each recording schedule needs to start with the word 'Record' alone on a line. Found '$line' on line $line_number. Exiting.");
             }

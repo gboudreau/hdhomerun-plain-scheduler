@@ -109,7 +109,7 @@ class Recording
         'save to' => '_save_to_path',
     ];
 
-    public function addLine(string $line, int $line_number, bool $quiet = FALSE) {
+    public function addLine(string $line, int $line_number, bool $quiet = FALSE) : bool {
         if (empty($this->_start_line_number)) {
             $this->_start_line_number = $line_number - 1;
         }
@@ -124,7 +124,10 @@ class Recording
         }
         if (!$matched) {
             _log("Warning: couldn't parse line $line_number from schedules file: '$line'. Ignoring.");
+            return FALSE;
         }
+
+        return TRUE;
     }
 
     public function validate() {
@@ -279,9 +282,9 @@ class Recording
         exec($cmd, $output, $return);
 
         if ($return === 0) {
-            _log("Command completed successfully (return value = 0)");
+            _log("Command (curl) completed successfully (return value = 0)");
         } else {
-            _log("Error: command exited with value $return");
+            _log("Error: curl command exited with value $return");
             _log("  Command output: " . implode("\n", $output));
         }
 
@@ -328,5 +331,21 @@ class Recording
             return ( $starts_ts1 < $starts_ts2 ? -1 : 1 );
         }
         return 0;
+    }
+
+    public function getClass() : string {
+        if (string_contains($this->_status, 'Error: ')) {
+            return 'bg-danger';
+        }
+        switch ($this->_status) {
+        case 'Recording...':
+        case 'Recording Completed - Moving':
+            return 'table-danger';
+        case 'Recording Completed':
+            return 'table-success';
+        case 'Scheduled':
+            return 'table-warning';
+        }
+        return '';
     }
 }

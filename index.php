@@ -39,7 +39,7 @@ usort($recordings, [__NAMESPACE__ . '\Recording', 'sortByDateTime']);
             }
             ?>
             <?php foreach ($recordings as $recording) : ?>
-                <tr>
+                <tr class="<?php phe($recording->getClass()) ?>">
                     <td><?php phe(date('Y-m-d H:i', $recording->getStartTimestamp())) ?></td>
                     <td><?php phe($recording->getDurationAsString()) ?></td>
                     <td><?php phe($recording->getChannel()) ?></td>
