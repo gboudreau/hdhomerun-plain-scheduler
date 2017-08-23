@@ -123,7 +123,7 @@ class Recording
             }
         }
         if (!$matched) {
-            _log("Warning: couldn't parse line $line_number from schedules file: '$line'. Ignoring.");
+            _log("Warning: couldn't parse line $line_number from " . ($this instanceof LoggedRecording ? "log" : "schedules" ) ." file: '$line'. Ignoring.");
             return FALSE;
         }
 
