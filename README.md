@@ -6,7 +6,7 @@ Recordings scheduling system using plain-text files for HDHomeRun tuners
 - Linux ([PR for Windows compatibility are welcome](https://github.com/gboudreau/hdhomerun-plain-scheduler/wiki/Windows-compatibility))
 - PHP 7.x
 - cURL module for PHP
-- `exec()` available (it is used to spawn new PHP processes to handlign individual recordings)
+- `exec()` available (it is used to spawn new PHP processes to handle individual recordings)
 - Optional: web server (Apache, nginx, ...)
 
 ## Install
