@@ -36,6 +36,21 @@ usort($recordings, [__NAMESPACE__ . '\Recording', 'sortByDateTime']);
                 $past_recordings = $parser->getRecordings();
                 usort($past_recordings, [__NAMESPACE__ . '\Recording', 'sortByDateTime']);
                 $recordings = array_merge($past_recordings, $recordings);
+
+                // Remove duplicate recordings (ongoing recordings will be in both log and schedules file)
+                $recordings = array_filter(
+                    $recordings,
+                    function ($v, $k) {
+                        global $recordings;
+                        for ($i=0; $i<$k; $i++) {
+                            if ($recordings[$i]->getHash() == $v->getHash()) {
+                                return FALSE;
+                            }
+                        }
+                        return TRUE;
+                    },
+                    ARRAY_FILTER_USE_BOTH
+                );
             }
             ?>
             <?php foreach ($recordings as $recording) : ?>
