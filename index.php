@@ -26,6 +26,7 @@ usort($recordings, [__NAMESPACE__ . '\Recording', 'sortByDateTime']);
                 <th>Channel</th>
                 <th>What</th>
                 <th>Status</th>
+                <th></th>
             </tr>
             </thead>
             <tbody>
@@ -60,6 +61,11 @@ usort($recordings, [__NAMESPACE__ . '\Recording', 'sortByDateTime']);
                     <td><?php phe($recording->getChannel()) ?></td>
                     <td><?php phe($recording->getName()) ?></td>
                     <td><?php phe($recording->getStatus()) ?></td>
+                    <td>
+                        <?php if ($recording->isEditable()) : ?>
+                            <a href="new.php?hash=<?php phe($recording->getHash()) ?>"><i class="fa fa-pencil-square-o" aria-hidden="false"></i></a>
+                        <?php endif; ?>
+                    </td>
                 </tr>
             <?php endforeach; ?>
             </tbody>

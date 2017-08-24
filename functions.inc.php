@@ -123,3 +123,12 @@ function echo_if($condition, $text_if_true, $text_if_false = '') {
         echo $text_if_false;
     }
 }
+
+function print_result() {
+    if (!empty($_REQUEST['result'])) {
+        $class = (!empty($_REQUEST['result']['success']) ? 'bg-success' : 'bg-danger' );
+        echo '<div class="card text-white ' . $class . '"><div class="card-body">';
+        phe($_REQUEST['result']['success'] ?? $_REQUEST['result']['error']);
+        echo '</div></div>';
+    }
+}

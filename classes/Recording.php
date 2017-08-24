@@ -18,6 +18,8 @@ class Recording
     private $_start_line_number;
     private $_end_line_number;
 
+    protected $editable = TRUE;
+
     public function __construct($hash = NULL) {
         $this->_hash = $hash;
     }
@@ -61,7 +63,19 @@ class Recording
     }
 
     public function getName() : string {
-        return trim(sprintf("%s %s %s", $this->_serie, $this->_episode, $this->_episode_name));
+        return trim(sprintf("%s %s %s", $this->getSerie(), $this->getEpisode(), $this->getEpisodeName()));
+    }
+
+    public function getSerie() : string {
+        return $this->_serie;
+    }
+
+    public function getEpisode() {
+        return $this->_episode;
+    }
+
+    public function getEpisodeName() {
+        return $this->_episode_name;
     }
 
     public function getChannel() : string {
@@ -72,6 +86,10 @@ class Recording
         return $this->_status;
     }
 
+    public function isEditable() : bool {
+        return $this->editable;
+    }
+
     public function getTempPath() : string {
         $folder = Config::get('TEMP_PATH');
         if (!$folder) {
@@ -79,6 +97,10 @@ class Recording
         }
         $filename = basename($this->getFullPath());
         return clean_dir_name($folder . DIRECTORY_SEPARATOR . $filename);
+    }
+
+    public function getSaveTo() {
+        return $this->_save_to_path;
     }
 
     public function getFullPath(bool $include_extension = TRUE) : string {
@@ -135,7 +157,7 @@ class Recording
         if (empty($this->_duration)) {
             throw new \Exception("Error: missing 'duration' row in Record block starting at line $this->_start_line_number. Skipping this Record block.");
         }
-        $this->_getDurationInSeconds();
+        $this->getDurationInSeconds();
 
         if (empty($this->_serie)) {
             throw new \Exception("Error: missing 'serie' row in Record block starting at line $this->_start_line_number. Skipping this Record block.");
@@ -171,7 +193,7 @@ class Recording
     }
 
     public function isComplete() : bool {
-        $end_ts = $this->getStartTimestamp() + $this->_getDurationInSeconds();
+        $end_ts = $this->getStartTimestamp() + $this->getDurationInSeconds();
         return ( $end_ts <= time() );
     }
 
@@ -194,12 +216,12 @@ class Recording
     }
 
     private function _adjustDurationToStartRecordingNow(bool $quiet = FALSE) {
-        $end_ts = $this->getStartTimestamp() + $this->_getDurationInSeconds();
+        $end_ts = $this->getStartTimestamp() + $this->getDurationInSeconds();
         $duration_in_secs = $end_ts - time();
         $this->_duration = $duration_in_secs . 's';
     }
 
-    private function _getDurationInSeconds() : int {
+    public function getDurationInSeconds() : int {
         $duration = 0;
         if (preg_match('/([0-9]+)h/', $this->_duration, $re)) {
             $duration += $re[1] * 60 * 60;
@@ -217,7 +239,7 @@ class Recording
     }
 
     public function getDurationAsString() : string {
-        $duration_in_secs = $this->_getDurationInSeconds();
+        $duration_in_secs = $this->getDurationInSeconds();
         $duration = '';
         if ($duration_in_secs >= 60*60) {
             $hours = floor($duration_in_secs / (60*60));
@@ -271,7 +293,7 @@ class Recording
         // Adjust _duration as needed
         $this->_adjustDurationToStartRecordingNow();
 
-        $hdhomerun_url = 'http://' . Config::get('HDHOMERUN_IP_ADDRESS') . ':5004/auto/v' . $this->_channel . '?duration=' . $this->_getDurationInSeconds();
+        $hdhomerun_url = 'http://' . Config::get('HDHOMERUN_IP_ADDRESS') . ':5004/auto/v' . $this->_channel . '?duration=' . $this->getDurationInSeconds();
         // @TODO Add optional transcoding parameter
 
         _log("Starting Recording:\n" . trim($this));
@@ -320,8 +342,10 @@ class Recording
         }
     }
 
-    public function removeFromSchedulesFile() {
-        _log("Removing Record Block (" . $this->getHash() . ") from schedules file: lines $this->_start_line_number to $this->_end_line_number");
+    public function removeFromSchedulesFile(bool $quiet = FALSE) {
+        if (!$quiet) {
+            _log("Removing Record Block (" . $this->getHash() . ") from schedules file: lines $this->_start_line_number to $this->_end_line_number");
+        }
         $schedules = explode("\n", file_get_contents(Config::get('SCHEDULES_FILE')));
         $new_schedules = [];
         for ($l = 0; $l<count($schedules); $l++) {
