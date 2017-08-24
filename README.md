@@ -1,6 +1,25 @@
 # HDHomeRun Plain-Text Scheduler
 Recordings scheduling system using plain-text files for HDHomeRun tuners
 
+## Example recording schedule:
+
+See the [schedules.example.txt](https://github.com/gboudreau/hdhomerun-plain-scheduler/blob/master/schedules.example.txt) file for more examples, and more details about the file format (eg. how to use comments).
+```
+Record
+    serie       Game of Thrones
+    episode     S7E08
+        named   The Final FINAL episode
+    on channel  17.1
+    on date     2017-08-19
+    at          09:00
+    duration    1h07m
+    save to     /path/to/recordings/
+```
+
+Episode name is optional, as is the episode ID (SxxEyy); if not specified, the date of the recording will be used (SyyyyEmmdd).  
+`Save to` path is also optional, if you define a default in the `config.php` file.  
+The final recorded file will be saved as `/path/to/recordings/Serie/Season xx/Serie SxxEyy Ep name.ts`
+
 ## Requirements:
 
 - Linux ([PR for Windows compatibility are welcome](https://github.com/gboudreau/hdhomerun-plain-scheduler/wiki/Windows-compatibility))
