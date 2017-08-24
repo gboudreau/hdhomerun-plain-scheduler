@@ -54,8 +54,17 @@ usort($recordings, [__NAMESPACE__ . '\Recording', 'sortByDateTime']);
                 );
             }
             ?>
+            <tr>
+                <td colspan="6">
+                    <button type="button" class="btn" data-toggle="collapse" data-target=".collapsible" onclick="$(this).find('span').toggleClass('show')">
+                        <span class="collapse show">Show completed recordings</span>
+                        <span class="collapse">Hide completed recordings</span>
+                        <i class="fa fa-chevron-down" aria-hidden="false"></i>
+                    </button>
+                </td>
+            </tr>
             <?php foreach ($recordings as $recording) : ?>
-                <tr class="<?php phe($recording->getClass()) ?>">
+                <tr class="<?php echo_if(!$recording->isEditable() && $recording->isComplete(), 'collapsible collapse') ?> <?php phe($recording->getClass()) ?>">
                     <td><?php phe(date('Y-m-d H:i', $recording->getStartTimestamp())) ?></td>
                     <td><?php phe($recording->getDurationAsString()) ?></td>
                     <td><?php phe($recording->getChannel()) ?></td>
