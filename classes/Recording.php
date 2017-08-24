@@ -264,7 +264,7 @@ class Recording
             return;
         }
 
-        $cmd = 'php ./record.php ' . escapeshellarg($this->getHash());
+        $cmd = 'php bin/record.php ' . escapeshellarg($this->getHash());
         exec("$cmd >/dev/null 2>/dev/null &");
     }
 

@@ -1,13 +1,13 @@
 <?php
 namespace GBoudreau\HDHomeRun\Scheduler;
 
+chdir(__DIR__ . '/..');
 require_once 'init.inc.php';
 
 global $parser;
 
 $recordings = $parser->getRecordings();
 usort($recordings, [__NAMESPACE__ . '\Recording', 'sortByDateTime']);
-
 ?>
 
 <?php require 'head.inc.php' ?>

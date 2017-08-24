@@ -37,7 +37,7 @@ The final recorded file will be saved as `/path/to/recordings/Serie/Season xx/Se
 crontab -l > mycron
 echo >> mycron
 echo '# HDHomeRun Plain-Text Scheduler' >> mycron
-echo '* * * * *   php /path/to/hdhomerun-plain-scheduler/cron.php' >> mycron
+echo '* * * * *   php /path/to/hdhomerun-plain-scheduler/bin/cron.php' >> mycron
 crontab mycron
 rm mycron
 ```
@@ -45,5 +45,5 @@ rm mycron
 ## Web UI
 
 There is a very simple web UI to monitor your scheduled recording, and add new ones.  
-To use it, simply point your favorite HTTP server to this folder. It contains an `index.php` file that will be used to serve web content.  
+To use it, simply point your favorite HTTP server to the `web/` sub-folder. It contains an `index.php` file that will be used to serve web content.  
 Of note: make sure the user running the HTTP server can read your schedules & log files, and optionally write to your schedules file (if you want to be able to create new schedules from the web).
