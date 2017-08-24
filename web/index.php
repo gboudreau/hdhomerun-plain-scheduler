@@ -16,7 +16,7 @@ usort($recordings, [__NAMESPACE__ . '\Recording', 'sortByDateTime']);
     <main class="p-3">
         <h2>
             Scheduled Recordings
-            <button class="btn btn-default" onclick="window.location.href='new.php'">Create new</button>
+            <button class="btn btn-primary" onclick="window.location.href='new.php'">Create new</button>
         </h2>
         <table class="table table-striped table-responsive">
             <thead>
@@ -57,9 +57,8 @@ usort($recordings, [__NAMESPACE__ . '\Recording', 'sortByDateTime']);
             <tr>
                 <td colspan="6">
                     <button type="button" class="btn" data-toggle="collapse" data-target=".collapsible" onclick="$(this).find('span').toggleClass('show')">
-                        <span class="collapse show">Show completed recordings</span>
-                        <span class="collapse">Hide completed recordings</span>
-                        <i class="fa fa-chevron-down" aria-hidden="false"></i>
+                        <span class="collapse show">Show completed recordings <i class="fa fa-chevron-down" aria-hidden="false"></i></span>
+                        <span class="collapse">Hide completed recordings <i class="fa fa-chevron-up" aria-hidden="false"></i></span>
                     </button>
                 </td>
             </tr>

@@ -53,7 +53,7 @@ if (!empty($_GET['hash'])) {
 
 <div class="row">
     <div>
-        <a href="./">&lt; Back</a>
+        <a href="./"><i class="fa fa-chevron-left" aria-hidden="true"></i> Back</a>
     </div>
     <main class="p-3 col-sm-11">
         <h2>Schedule New Recording</h2>
