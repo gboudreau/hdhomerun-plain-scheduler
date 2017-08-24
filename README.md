@@ -31,6 +31,7 @@ The final recorded file will be saved as `/path/to/recordings/Serie/Season xx/Se
 ## Install
 - Copy `config.example.php` to `config.php`, and edit as required;
 - Copy `schedules.example.txt` to `schedules.txt`, and edit to list all the recordings you'd like to schedule;
+- Install [composer](https://getcomposer.org/) (if you don't already have it), and run: `composer install`
 - Add a cron job that will run every minute, to start recordings as needed:
 
 ```
