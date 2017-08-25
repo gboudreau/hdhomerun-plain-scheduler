@@ -8,6 +8,18 @@ global $parser;
 
 $recordings = $parser->getRecordings();
 usort($recordings, [__NAMESPACE__ . '\Recording', 'sortByDateTime']);
+
+if (!empty($_GET['delete_hash'])) {
+    foreach ($recordings as $k => $recording) {
+        if ($recording->getHash() == $_GET['delete_hash']) {
+            $recording->removeFromSchedulesFile();
+            unset($recordings[$k]);
+            $recordings = array_values($recordings);
+            $_REQUEST['result']['success'] = 'Successfully deleted recording.';
+            break;
+        }
+    }
+}
 ?>
 
 <?php require 'head.inc.php' ?>
@@ -18,6 +30,9 @@ usort($recordings, [__NAMESPACE__ . '\Recording', 'sortByDateTime']);
             Scheduled Recordings
             <button class="btn btn-primary" onclick="window.location.href='new.php'">Create new</button>
         </h2>
+
+        <?php print_result() ?>
+
         <table class="table table-striped table-responsive">
             <thead>
             <tr>
@@ -72,6 +87,7 @@ usort($recordings, [__NAMESPACE__ . '\Recording', 'sortByDateTime']);
                     <td>
                         <?php if ($recording->isEditable()) : ?>
                             <a href="new.php?hash=<?php phe($recording->getHash()) ?>"><i class="fa fa-pencil-square-o" aria-hidden="false"></i></a>
+                            <a href="./?delete_hash=<?php phe($recording->getHash()) ?>" onclick="return confirm('Are you sure?')"><i class="fa fa-trash-o" aria-hidden="false"></i></a>
                         <?php endif; ?>
                     </td>
                 </tr>
