@@ -73,8 +73,9 @@ if (Config::get('XMLTV_FILE')) {
 
         $recording_scheduled = FALSE;
         foreach ($recordings as $recording) {
-            if (strtolower($recording->getSerie()) == strtolower($title)) {
-                $recording_scheduled = TRUE;
+            if ($recording->getChannel() == $channel && $start >= $recording->getStartTimestamp() && $start < $recording->getStartTimestamp() + $recording->getDurationInSeconds()) {
+                $recording_scheduled = $recording->getName();
+                break;
             }
         }
 
@@ -191,7 +192,7 @@ if (Config::get('XMLTV_FILE')) {
         for (var start in ps) {
             if (ps.hasOwnProperty(start)) {
                 var p = ps[start];
-                option = $('<option/>').attr({'value': start, 'data-serie': p.serie.toLowerCase(), 'data-episode-name': p.episode_name.toLowerCase()}).text("[" + p.start + "] " + p.serie + (p.episode_name != '' ? " - " + p.episode_name : "") + (p.recording ? " - RECORDING" : ""));
+                option = $('<option/>').attr({'value': start, 'data-serie': p.serie.toLowerCase(), 'data-episode-name': p.episode_name.toLowerCase()}).text("[" + p.start + "] " + p.serie + (p.episode_name != '' ? " - " + p.episode_name : "") + (p.recording !== false ? " - RECORDING: " + p.recording : ""));
                 $select.append(option);
             }
         }
