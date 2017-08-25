@@ -19,3 +19,7 @@ $CONFIG->DEFAULT_SAVE_TO_PATH = '/path/to/recordings/';
 
 // Make sure the user running the script can create this file; if you specify a relative path, it should be relative to this config file
 $CONFIG->LOG_FILE = './hdhomerun-plain-scheduler.log';
+
+// If you have access to XMLTV data, we can use this to simplify scheduling new recordings on the web
+// Look for zap2xml or mc2xml if you're unsure how to obtain XMLTV data for your region.
+$CONFIG->XMLTV_FILE = '/path/to/epg/data/xmltv.xml';
