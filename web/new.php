@@ -31,6 +31,7 @@ if (isset($_POST['createNew'])) {
 
         $recording->addToSchedulesFile();
 
+        $recordings[] = $recording;
         $_GET['hash'] = $recording->getHash();
 
         $_REQUEST['result']['success'] = 'Successfully saved recording.';
