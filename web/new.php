@@ -52,6 +52,7 @@ if (!empty($_GET['hash'])) {
 $epg = XMLTV::getEPGFromFile($recordings);
 $channels = $epg->channels;
 $programs = $epg->programs;
+$categories = $epg->categories;
 ?>
 
 <?php require 'head.inc.php' ?>
@@ -67,7 +68,7 @@ $programs = $epg->programs;
 
         <form method="post" action="">
 
-            <?php if (!empty($channels)) : ?>
+            <?php if (!empty($channels) && empty($_GET['hash'])) : ?>
                 <hr/>
                 <div class="form-group row">
                     <label for="autoFillChannel" class="col-sm-2 col-form-label"><h4>Auto-fill from EPG</h4></label>
@@ -81,6 +82,13 @@ $programs = $epg->programs;
                         <select class="form-control invisible" id="autoFillProgram" onchange="autoFillFromEPG(this)">
                         </select>
                         <input type="text" class="form-control invisible" id="filterProgramsField" placeholder="Filter programs">
+                        <?php foreach ($categories as $k => $category) : ?>
+                            <span class="invisible">
+                                <label for="<?php phe("filterCat" . $k) ?>"><?php phe($category) ?></label>
+                                <input type="checkbox" checked="checked" id="<?php phe("filterCat" . $k) ?>" value="<?php phe($category) ?>" />
+                                &nbsp; &nbsp;
+                            </span>
+                        <?php endforeach; ?>
                     </div>
                 </div>
                 <hr/>
@@ -149,14 +157,19 @@ $programs = $epg->programs;
         for (var start in ps) {
             if (ps.hasOwnProperty(start)) {
                 var p = ps[start];
-                option = $('<option/>').attr({'value': start, 'data-serie': p.serie.toLowerCase(), 'data-episode-name': p.episode_name.toLowerCase()}).text("[" + p.start + "] " + p.serie + (p.episode_name != '' ? " - " + p.episode_name : "") + (p.recording !== false ? " - RECORDING: " + p.recording : ""));
+                option = $('<option/>').attr({'value': start, 'data-serie': p.serie.toLowerCase(), 'data-episode-name': p.episode_name.toLowerCase(), 'data-category': p.category.toLowerCase()}).text("[" + p.start + "] " + p.serie + (p.episode_name != '' ? " - " + p.episode_name : "") + (p.recording !== false ? " - RECORDING: " + p.recording : ""));
                 $select.append(option);
             }
         }
 
-        $select.removeClass('invisible');
+        $('#filterProgramsField').off().on('change', filterEPGPrograms);
 
-        $('#filterProgramsField').removeClass('invisible').off().on('change', filterEPGPrgrams);
+        var $categories_checkboxes = $select.closest('.form-group').find('input[type="checkbox"]');
+        $categories_checkboxes.off().on('change', filterEPGPrograms);
+
+        $select.closest('.form-group').find('.invisible').removeClass('invisible');
+
+        filterEPGPrograms();
     }
 
     function autoFillFromEPG(select) {
@@ -175,15 +188,28 @@ $programs = $epg->programs;
         }
     }
 
-    function filterEPGPrgrams() {
-        var input = this;
-        var filter = $(input).val().toLowerCase();
-        if (filter === '') {
-            $('#autoFillProgram option').show();
-            return;
-        }
+    function filterEPGPrograms() {
+        // Hide all programs; will show those matching the filter(s)
         $('#autoFillProgram option').hide();
-        var $opt = $("option[data-serie*='" + filter + "'], option[data-episode-name*='" + filter + "']");
+
+        var $opt = $('#autoFillProgram').find("option");
+
+        $opt.first().show();
+
+        var filter = $('#filterProgramsField').val().toLowerCase();
+        if (filter !== '') {
+            $opt = $opt.filter("option[data-serie*='" + filter + "'], option[data-episode-name*='" + filter + "']");
+        }
+
+        var $categories_checkboxes = $('#autoFillProgram').closest('.form-group').find('input[type="checkbox"]');
+        $categories_checkboxes.each(function () {
+            var $checkbox = $(this);
+            if (!$checkbox.is(':checked')) {
+                var filter = $checkbox.val() === 'N/A' ? '' : $checkbox.val();
+                $opt = $opt.filter("option[data-category!='" + filter.toLowerCase() + "']");
+            }
+        });
+
         $opt.show();
     }
 </script>

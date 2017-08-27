@@ -6,13 +6,14 @@ class XMLTV
     public static function getEPGFromFile(array $recordings) {
         $channels = [];
         $programs  = [];
+        $categories = [];
 
         if (Config::get('XMLTV_FILE')) {
             $tmp_file = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'hdhr-epg.cache';
 
             if (file_exists($tmp_file) && filemtime($tmp_file) >= time() - 2*60*60) {
                 $epg = json_decode(file_get_contents($tmp_file));
-                static::_filterChannels($epg);
+                static::_filterChannels($epg, $recordings);
                 return $epg;
             }
 
@@ -33,17 +34,10 @@ class XMLTV
                 $channel = sprintf("%.1f", (string) $program->attributes()['channel']);
                 $title = (string) $program->title;
                 $episode_name = (string) $program->{'sub-title'};
+                $category = (string) $program->{'category'};
 
                 if (empty($title)) {
                     continue;
-                }
-
-                $recording_scheduled = FALSE;
-                foreach ($recordings as $recording) {
-                    if ($recording->getChannel() == $channel && $start >= $recording->getStartTimestamp() && $start < $recording->getStartTimestamp() + $recording->getDurationInSeconds()) {
-                        $recording_scheduled = $recording->getName();
-                        break;
-                    }
                 }
 
                 $programs[$channel][$start] = (object) [
@@ -52,10 +46,18 @@ class XMLTV
                     'start' => date('Y-m-d H:i:s', $start),
                     'start_t' => str_replace(' ', 'T', date('Y-m-d H:i:s.0', $start)),
                     'duration' => round(($stop - $start) / 60),
+                    'stop' => date('Y-m-d H:i:s', $stop),
                     'channel' => (string) $channel,
-                    'recording' => $recording_scheduled,
+                    'category' => $category,
                 ];
+
+                $categories[$category] = TRUE;
             }
+
+            $categories = array_keys($categories);
+            $categories = array_remove($categories, '');
+            sort($categories);
+            $categories[] = 'N/A';
 
             foreach ($programs as $channel => $ps) {
                 ksort($ps);
@@ -63,18 +65,39 @@ class XMLTV
             }
         }
 
-        $epg = (object) ['channels' => $channels, 'programs' => $programs];
+        $epg = (object) ['channels' => $channels, 'programs' => $programs, 'categories' => $categories];
 
         if (isset($tmp_file)) {
             file_put_contents($tmp_file, json_encode($epg));
         }
 
-        static::_filterChannels($epg);
+        static::_filterChannels($epg, $recordings);
 
         return $epg;
     }
 
-    private static function _filterChannels(&$epg) {
+    private static function _filterChannels(&$epg, array $recordings) {
+        $programs = (array) $epg->programs;
+        foreach ($programs as $channel => $ps) {
+            foreach ($ps as $k => $p) {
+                if (strtotime($p->stop) < time()) {
+                    unset($ps[$k]);
+                    continue;
+                }
+
+                $p->recording = FALSE;
+                foreach ($recordings as $recording) {
+                    if ($recording->getChannel() == $channel && strtotime($p->start) >= $recording->getStartTimestamp() && strtotime($p->start) < $recording->getStartTimestamp() + $recording->getDurationInSeconds()) {
+                        $p->recording[] = $recording->getName();
+                    }
+                }
+                if (is_array($p->recording)) {
+                    $p->recording = implode(', ', $p->recording);
+                }
+            }
+        }
+        $epg->programs = $programs;
+
         $keep_channels = Config::get('XMLTV_CHANNELS');
         if ($keep_channels) {
             $channels = (array) $epg->channels;
