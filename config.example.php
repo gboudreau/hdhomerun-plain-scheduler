@@ -23,3 +23,6 @@ $CONFIG->LOG_FILE = './hdhomerun-plain-scheduler.log';
 // If you have access to XMLTV data, we can use this to simplify scheduling new recordings on the web
 // Look for zap2xml or mc2xml if you're unsure how to obtain XMLTV data for your region.
 $CONFIG->XMLTV_FILE = '/path/to/epg/data/xmltv.xml';
+
+// If defined, only keep a subset of the channels from the XMLTV data
+#$CONFIG->XMLTV_CHANNELS = [2.1, 6.1, 10.1, 12.1, 15.1, 17.1, 29.1];
