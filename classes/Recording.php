@@ -169,10 +169,6 @@ class Recording
             throw new \Exception("Error: missing 'serie' row in Record block starting at line $this->_start_line_number. Skipping this Record block.");
         }
 
-        if (empty($this->_episode)) {
-            $this->_episode = 'S' . date('Y') . 'E' . date('md');
-        }
-
         if (empty($this->_channel)) {
             throw new \Exception("Error: missing 'on channel' row in Record block starting at line $this->_start_line_number. Skipping this Record block.");
         }
@@ -183,6 +179,10 @@ class Recording
 
         if (empty($this->_time)) {
             throw new \Exception("Error: missing 'at' row in Record block starting at line $this->_start_line_number. Skipping this Record block.");
+        }
+
+        if (empty($this->_episode)) {
+            $this->_episode = 'S' . date('Y', strtotime($this->_date)) . 'E' . date('md', strtotime($this->_date));
         }
 
         if (empty($this->_save_to_path)) {
