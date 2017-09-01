@@ -16,7 +16,8 @@ if (isset($_POST['createNew'])) {
         $_POST['channel'],
         substr($_POST['datetime'], 0, 16),
         $_POST['duration'] . 'm',
-        $_POST['save_to']
+        $_POST['save_to'],
+        $_POST['repeats']
     );
     try {
         $recording->validate();
@@ -129,6 +130,19 @@ $categories = $epg->categories;
                 <label for="durationField" class="col-sm-2 col-form-label">Duration *</label>
                 <div class="col-sm-2" style="max-width: 150px">
                     <input type="number" class="form-control" id="durationField" name="duration" placeholder="minutes" required value="<?php if (isset($this_recording)) phe($this_recording->getDurationInSeconds() / 60) ?>">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="repeatsField" class="col-sm-2 col-form-label">Repeats</label>
+                <div class="col-sm-2" style="max-width: 150px">
+                    <select class="form-control" id="repeatsField" name="repeats">
+                        <option value="">No</option>
+                        <option value="weekly" <?php echo_if(isset($this_recording) && $this_recording->getRepeats() == 'weekly', 'selected="selected"') ?>>Weekly</option>
+                        <option value="daily" <?php echo_if(isset($this_recording) && $this_recording->getRepeats() == 'daily', 'selected="selected"') ?>>Daily</option>
+                        <option value="weekdays" <?php echo_if(isset($this_recording) && $this_recording->getRepeats() == 'weekdays', 'selected="selected"') ?>>Weekdays</option>
+                        <option value="mon-thu" <?php echo_if(isset($this_recording) && $this_recording->getRepeats() == 'mon-thu', 'selected="selected"') ?>>Monday to Thursday</option>
+                        <option value="tue-fri" <?php echo_if(isset($this_recording) && $this_recording->getRepeats() == 'tue-fri', 'selected="selected"') ?>>Tuesday to Friday</option>
+                    </select>
                 </div>
             </div>
             <div class="form-group row">

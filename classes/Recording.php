@@ -10,6 +10,7 @@ class Recording
     private $_date;
     private $_time;
     private $_duration;
+    private $_repeats = '';
     private $_save_to_path;
 
     private $_hash;
@@ -24,7 +25,7 @@ class Recording
         $this->_hash = $hash;
     }
 
-    public static function create($serie, $episode, $episode_name, $channel, $date_time, $duration, $save_to) : self {
+    public static function create($serie, $episode, $episode_name, $channel, $date_time, $duration, $save_to, $repeats) : self {
         $r = new Recording();
         $r->_serie = $serie;
         if (!empty($episode)) {
@@ -37,6 +38,7 @@ class Recording
         $r->_date = substr($date_time, 0, 10);
         $r->_time = substr($date_time, 11);
         $r->_duration = $duration;
+        $r->_repeats = $repeats;
         if (!empty($episode_name)) {
             $r->_save_to_path = $save_to;
         }
@@ -56,6 +58,9 @@ class Recording
         $record_block .= sprintf("\ton date  %s\n", $this->_date);
         $record_block .= sprintf("\tat  %s\n", $this->_time);
         $record_block .= sprintf("\tduration  %s\n", $this->getDurationAsString());
+        if (!empty($this->_repeats)) {
+            $record_block .= sprintf("\trepeats  %s\n", $this->_repeats);
+        }
         if (!empty($this->_save_to_path)) {
             $record_block .= sprintf("\tsave to  %s\n", $this->_save_to_path);
         }
@@ -128,6 +133,7 @@ class Recording
         'on date' => '_date',
         'at' => '_time',
         'duration' => '_duration',
+        'repeats' => '_repeats',
         'save to' => '_save_to_path',
     ];
 
@@ -219,6 +225,10 @@ class Recording
         $end_ts = $this->getStartTimestamp() + $this->getDurationInSeconds();
         $duration_in_secs = $end_ts - time();
         $this->_duration = $duration_in_secs . 's';
+    }
+
+    public function getRepeats() : string {
+        return $this->_repeats;
     }
 
     public function getDurationInSeconds() : int {
@@ -353,7 +363,45 @@ class Recording
                 $new_schedules[] = $schedules[$l];
             }
         }
-        file_put_contents(Config::get('SCHEDULES_FILE'), implode("\n", $new_schedules));
+        $new_schedules = implode("\n", $new_schedules);
+
+        // If this is a repeating schedule, schedule the next occurrence
+        if (!empty($this->_repeats) && !$quiet) {
+            switch ($this->_repeats) {
+            case 'weekly':
+                $next_date = strtotime('+1 week', strtotime($this->_date));
+                break;
+            case 'daily':
+                $next_date = strtotime('next day', strtotime($this->_date));
+                break;
+            case 'weekdays':
+                $next_date = strtotime('next weekday', strtotime($this->_date));
+                break;
+            case 'mon-thu':
+                $next_date = strtotime('next weekday', strtotime($this->_date));
+                if (date('D', $next_date) == 'Fri') {
+                    $next_date = strtotime('next Monday', $next_date);
+                }
+                break;
+            case 'tue-fri':
+                $next_date = strtotime('next weekday', strtotime($this->_date));
+                if (date('D', $next_date) == 'Mon') {
+                    $next_date = strtotime('next Tuesday', $next_date);
+                }
+                break;
+            default:
+                $next_date = NULL;
+            }
+            if (!empty($next_date)) {
+                $this->_date = date('Y-m-d', $next_date);
+                $this->_episode = NULL;
+                $this->validate();
+                $new_schedules .= "\n" . $this;
+                _log("Scheduling new occurrence of " . $this->getName() . " on $this->_date.");
+            }
+        }
+
+        file_put_contents(Config::get('SCHEDULES_FILE'), $new_schedules);
     }
 
     public static function sortByDateTime(self $r1, self $r2) : int {

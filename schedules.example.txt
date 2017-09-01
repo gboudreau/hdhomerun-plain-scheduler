@@ -6,6 +6,7 @@ Record
     on date     2017-08-19
     at          09:00
     duration    1h07m
+    repeats     weekly
     save to     /path/to/recordings/
 
 Record
