@@ -325,10 +325,20 @@ class Recording
 
         if (file_exists($temp_path) && filesize($temp_path) > 0) {
             $final_path = $this->getFullPath();
-            _log("Moving file from $temp_path to $final_path");
             if (!is_dir(dirname($final_path))) {
                 mkdir(dirname($final_path), 0755, TRUE);
             }
+
+            // Save into a new file, if the $final_path file already exists
+            $original = $final_path;
+            $i = 1;
+            $ext = last(explode('.', $original));
+            while (file_exists($final_path)) {
+                $final_path = substr($original, 0, -(strlen($ext)+1)) . " (" . ($i++) . ")." . substr($original, -(strlen($ext)));
+            }
+
+            _log("Moving file from $temp_path to $final_path");
+
             if (!rename($temp_path, $final_path)) {
                 _log("Error: couldn't move temporary file from $temp_path to $final_path");
             }
