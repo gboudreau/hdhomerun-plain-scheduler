@@ -13,7 +13,7 @@ class Recording
     private $_save_to_path;
 
     private $_hash;
-    protected $_status = 'Scheduled';
+    protected $status = 'Scheduled';
 
     private $_start_line_number;
     private $_end_line_number;
@@ -83,7 +83,7 @@ class Recording
     }
 
     public function getStatus() {
-        return $this->_status;
+        return $this->status;
     }
 
     public function isEditable() : bool {
@@ -366,10 +366,10 @@ class Recording
     }
 
     public function getClass() : string {
-        if (string_contains($this->_status, 'Error: ')) {
+        if (string_contains($this->status, 'Error: ')) {
             return 'bg-danger';
         }
-        switch ($this->_status) {
+        switch ($this->status) {
         case 'Recording...':
         case 'Recording Completed - Moving':
             return 'table-danger';
