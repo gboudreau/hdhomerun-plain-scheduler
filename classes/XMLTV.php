@@ -79,6 +79,7 @@ class XMLTV
     private static function _filterChannels(&$epg, array $recordings) {
         $programs = (array) $epg->programs;
         foreach ($programs as $channel => $ps) {
+            $ps = (array) $ps;
             foreach ($ps as $k => $p) {
                 if (strtotime($p->stop) < time()) {
                     unset($ps[$k]);
