@@ -12,7 +12,7 @@ usort($recordings, [__NAMESPACE__ . '\Recording', 'sortByDateTime']);
 if (!empty($_GET['delete_hash'])) {
     foreach ($recordings as $k => $recording) {
         if ($recording->getHash() == $_GET['delete_hash']) {
-            $recording->removeFromSchedulesFile();
+            $recording->removeFromSchedulesFile(TRUE);
             unset($recordings[$k]);
             $recordings = array_values($recordings);
             $_REQUEST['result']['success'] = 'Successfully deleted recording.';
