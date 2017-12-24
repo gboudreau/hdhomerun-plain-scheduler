@@ -39,7 +39,7 @@ class Recording
         $r->_time = substr($date_time, 11);
         $r->_duration = $duration;
         $r->_repeats = $repeats;
-        if (!empty($episode_name)) {
+        if (!empty($save_to)) {
             $r->_save_to_path = $save_to;
         }
         return $r;
