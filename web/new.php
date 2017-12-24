@@ -148,7 +148,7 @@ $categories = $epg->categories;
             <div class="form-group row">
                 <label for="saveToField" class="col-sm-2 col-form-label">Save To Folder</label>
                 <div class="col-sm-6">
-                    <input type="text" class="form-control" id="saveToField" name="save_to" placeholder="<?php phe(Config::get('DEFAULT_SAVE_TO_PATH')) ?>" value="<?php if (isset($this_recording)) phe($this_recording->getSaveTo()) ?>">
+                    <input type="text" class="form-control" id="saveToField" name="save_to" value="<?php if (isset($this_recording)) { phe($this_recording->getSaveTo()); } else { phe(Config::get('DEFAULT_SAVE_TO_PATH')); } ?>">
                 </div>
             </div>
             <button type="submit" class="btn btn-primary" name="createNew">Save Recording Schedule</button>
