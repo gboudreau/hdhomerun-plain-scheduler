@@ -292,10 +292,27 @@ class Recording
             // Recording is already ongoing
             return;
         }
+
         $folder = dirname($temp_path);
         if (!is_dir($folder)) {
             mkdir($folder, 0755, TRUE);
         }
+
+        $final_path = $this->getFullPath();
+        if (!is_dir(dirname($final_path))) {
+            mkdir(dirname($final_path), 0755, TRUE);
+        }
+
+        // If the $final_path file already exists, append a (#) suffix to the filename; eg. "Some File (1).mpg"
+        $i = 1;
+        $ext = last(explode('.', $final_path));
+        $final_path_no_ext = substr($final_path, 0, -(strlen($ext)+1));
+        while (file_exists($final_path)) {
+            $final_path = sprintf("%s (%d).%s", $final_path_no_ext, $i++, $ext);
+        }
+
+        // Create a symlink at $final_path, to allow watching the recording while it is not yet complete
+        symlink($temp_path, $final_path);
 
 
         _log("================================================================================", TRUE);
@@ -324,20 +341,12 @@ class Recording
         curl_close($ch);
 
         if (file_exists($temp_path) && filesize($temp_path) > 0) {
-            $final_path = $this->getFullPath();
-            if (!is_dir(dirname($final_path))) {
-                mkdir(dirname($final_path), 0755, TRUE);
-            }
-
-            // Save into a new file, if the $final_path file already exists
-            $original = $final_path;
-            $i = 1;
-            $ext = last(explode('.', $original));
-            while (file_exists($final_path)) {
-                $final_path = substr($original, 0, -(strlen($ext)+1)) . " (" . ($i++) . ")." . substr($original, -(strlen($ext)));
-            }
-
             _log("Moving file from $temp_path to $final_path");
+
+            // Delete temporary symlink
+            if (is_link($final_path)) {
+                unlink($final_path);
+            }
 
             if (!rename($temp_path, $final_path)) {
                 _log("Error: couldn't move temporary file from $temp_path to $final_path");
