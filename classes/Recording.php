@@ -151,7 +151,7 @@ class Recording
             }
         }
         if (!$matched) {
-            _log("Warning: couldn't parse line $line_number from " . ($this instanceof LoggedRecording ? "log" : "schedules" ) ." file: '$line'. Ignoring.");
+            //_log("Warning: couldn't parse line $line_number from " . ($this instanceof LoggedRecording ? "log" : "schedules" ) ." file: '$line'. Ignoring.");
             return FALSE;
         }
 
@@ -270,8 +270,13 @@ class Recording
     public function startRecordingThread() {
         $temp_path = $this->getTempPath();
         if (file_exists($temp_path)) {
-            // Recording is already ongoing
-            return;
+            // Recording is already ongoing?
+            $running_recordings = exec("ps ax | grep -v grep | grep 'php bin/record.php' | grep " . escapeshellarg($this->getHash()) . " | wc -l");
+            if ($running_recordings > 0) {
+                return;
+            }
+            echo "Temp file exists, but no recording process found. Will rename temp file and re-start recorgin...\n";
+            rename($temp_path, "$temp_path.1");
         }
 
         $cmd = 'php bin/record.php ' . escapeshellarg($this->getHash());
@@ -309,6 +314,9 @@ class Recording
         $final_path_no_ext = substr($final_path, 0, -(strlen($ext)+1));
         while (file_exists($final_path)) {
             $final_path = sprintf("%s (%d).%s", $final_path_no_ext, $i++, $ext);
+        }
+        if (is_link($final_path)) {
+            unlink($final_path);
         }
 
         // Create a symlink at $final_path, to allow watching the recording while it is not yet complete
