@@ -11,7 +11,7 @@ class XMLTV
         if (Config::get('XMLTV_FILE')) {
             $tmp_file = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'hdhr-epg.cache';
 
-            if (file_exists($tmp_file) && filemtime($tmp_file) >= time() - 2*60*60) {
+            if (file_exists($tmp_file) && filesize($tmp_file) > 50000 && filemtime($tmp_file) >= time() - 2*60*60) {
                 $epg = json_decode(file_get_contents($tmp_file));
                 static::_filterChannels($epg, $recordings);
                 return $epg;
