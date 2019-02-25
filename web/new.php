@@ -140,6 +140,7 @@ $categories = $epg->categories;
                         <option value="weekly" <?php echo_if(isset($this_recording) && $this_recording->getRepeats() == 'weekly', 'selected="selected"') ?>>Weekly</option>
                         <option value="daily" <?php echo_if(isset($this_recording) && $this_recording->getRepeats() == 'daily', 'selected="selected"') ?>>Daily</option>
                         <option value="weekdays" <?php echo_if(isset($this_recording) && $this_recording->getRepeats() == 'weekdays', 'selected="selected"') ?>>Weekdays</option>
+                        <option value="mon-wed" <?php echo_if(isset($this_recording) && $this_recording->getRepeats() == 'mon-wed', 'selected="selected"') ?>>Monday to Wednesday</option>
                         <option value="mon-thu" <?php echo_if(isset($this_recording) && $this_recording->getRepeats() == 'mon-thu', 'selected="selected"') ?>>Monday to Thursday</option>
                         <option value="tue-fri" <?php echo_if(isset($this_recording) && $this_recording->getRepeats() == 'tue-fri', 'selected="selected"') ?>>Tuesday to Friday</option>
                     </select>

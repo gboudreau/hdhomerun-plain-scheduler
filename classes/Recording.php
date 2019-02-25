@@ -394,37 +394,48 @@ class Recording
 
         // If this is a repeating schedule, schedule the next occurrence
         if (!empty($this->_repeats) && !$quiet) {
-            switch ($this->_repeats) {
-            case 'weekly':
-                $next_date = strtotime('+1 week', strtotime($this->_date));
-                break;
-            case 'daily':
-                $next_date = strtotime('next day', strtotime($this->_date));
-                break;
-            case 'weekdays':
-                $next_date = strtotime('next weekday', strtotime($this->_date));
-                break;
-            case 'mon-thu':
-                $next_date = strtotime('next weekday', strtotime($this->_date));
-                if (date('D', $next_date) == 'Fri') {
-                    $next_date = strtotime('next Monday', $next_date);
-                }
-                break;
-            case 'tue-fri':
-                $next_date = strtotime('next weekday', strtotime($this->_date));
-                if (date('D', $next_date) == 'Mon') {
-                    $next_date = strtotime('next Tuesday', $next_date);
-                }
-                break;
-            default:
-                $next_date = NULL;
+            $repeats = str_replace(' ', '', strtolower($this->_repeats));
+            if ($repeats == 'weekly') {
+                $repeats = strtolower(date('D', strtotime($this->_date)));
+            } elseif ($repeats == 'daily') {
+                $repeats = "mon-sun";
+            } elseif ($repeats == 'weekdays') {
+                $repeats = "mon-fri";
             }
-            if (!empty($next_date)) {
-                $this->_date = date('Y-m-d', $next_date);
-                $this->_episode = NULL;
-                $this->validate();
-                $new_schedules .= "\n" . $this;
-                _log("Scheduling new occurrence of " . $this->getName() . " on $this->_date.");
+            if (preg_match('/([[:alpha:]]{3})-([[:alpha:]]{3})/', $repeats, $re)) {
+                $dows = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+                $start = array_search($re[1], $dows);
+                $end = array_search($re[2], $dows);
+                $dows = array_slice($dows, $start, $end-$start+1);
+            } else {
+                $dows = explode(',', $repeats);
+            }
+
+            if (!empty($dows)) {
+                $next_date = strtotime($this->_date);
+                $i = 0;
+                do {
+                    $next_date = strtotime('next day', $next_date);
+                    $next_dow = strtolower(date('D', $next_date));
+                    if ($i++ >= 7) {
+                        $next_date = NULL;
+                        break;
+                    }
+                } while (!array_contains($dows, $next_dow));
+
+                if ($next_date != NULL) {
+                    $this->_date = date('Y-m-d', $next_date);
+                    if (preg_match('/S(\d\d?)E(\d\d\d?)/', $this->_episode, $re)) {
+                        $this->_episode = sprintf("S%02dE%02d", $re[1], $re[2]+1);
+                        $this->_episode_name = date('Y-m-d', strtotime($this->_date));
+                    } else {
+                        $this->_episode = NULL;
+                        $this->_episode_name = NULL;
+                    }
+                    $this->validate();
+                    $new_schedules .= "\n" . $this;
+                    _log("Scheduling new occurrence of " . $this->getName() . " ($this->_episode) on $this->_date.");
+                }
             }
         }
 

@@ -7,6 +7,7 @@ Record
     at          09:00
     duration    1h07m
     repeats     weekly
+# Formats allowed for repeats: weekly, weekdays (Mon-Fri), daily (every day), XXX-YYY (from XXX to YYY), and XXX,YYY,ZZZ (comma-separated list of days of the week)
     save to     /path/to/recordings/
 
 Record
