@@ -279,8 +279,16 @@ class Recording
             rename($temp_path, "$temp_path.1");
         }
 
-        $cmd = ['php', 'bin/record.php', escapeshellarg($this->getHash()), escapeshellarg(base64_encode(serialize($this)))];
-        exec(implode(' ', $cmd) . " >/dev/null 2>/dev/null &");
+        $cmd = [
+            'php',
+            'bin/record.php',
+            escapeshellarg($this->getHash()),
+            escapeshellarg(base64_encode(serialize($this))),
+            '>>' . escapeshellarg(Config::get('LOG_FILE')),
+            '2>>' . escapeshellarg(Config::get('LOG_FILE')),
+            '&'
+        ];
+        exec(implode(' ', $cmd));
     }
 
     public function getHash() : string {
