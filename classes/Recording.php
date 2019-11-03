@@ -279,6 +279,7 @@ class Recording
             rename($temp_path, "$temp_path.1");
         }
 
+        _log("Starting recording thread for $this->_serie (" . $this->getHash() . ") ...");
         $cmd = [
             'php',
             'bin/record.php',

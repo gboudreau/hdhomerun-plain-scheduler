@@ -49,6 +49,8 @@ class LogParser
                 continue;
             } elseif ($line == 'Record') {
                 continue;
+            } elseif (string_contains($line, 'Starting recording thread')) {
+                continue;
             } elseif (string_contains($line, 'Removing Record Block')) {
                 continue;
             } elseif ($in_error) {
