@@ -65,11 +65,11 @@ class LogParser
                 $this->_recordings[$hash]->setStatus(substr($line, strpos($line, 'Error: ')));
                 $in_error = TRUE;
             }
-            if (empty($this->_recordings[$hash])) {
-                throw new \Exception("Fatal error: each recording schedule needs to start with the word 'Record' alone on a line. Found '$line' on line $line_number. Exiting.");
+            if (!empty($this->_recordings[$hash])) {
+                $this->_recordings[$hash]->addLine($line, $line_number, TRUE);
+            } else {
+                // Is an unexpected line; let's just skip it...
             }
-
-            $this->_recordings[$hash]->addLine($line, $line_number, TRUE);
         }
     }
 
