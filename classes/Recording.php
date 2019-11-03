@@ -275,7 +275,7 @@ class Recording
             if ($running_recordings > 0) {
                 return;
             }
-            echo "Temp file exists, but no recording process found. Will rename temp file and re-start recording...\n";
+            _log("Temp file exists, but no recording process found. Will rename temp file and re-start recording.");
             rename($temp_path, "$temp_path.1");
         }
 
