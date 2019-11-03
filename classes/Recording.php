@@ -52,7 +52,7 @@ class Recording
             $record_block .= sprintf("\tepisode  %s\n", $this->_episode);
         }
         if (!empty($this->_episode_name)) {
-            $record_block .= sprintf("\t\tnamed %s\n", $this->_episode_name);
+            $record_block .= sprintf("\t\tnamed  %s\n", $this->_episode_name);
         }
         $record_block .= sprintf("\ton channel  %s\n", $this->_channel);
         $record_block .= sprintf("\ton date  %s\n", $this->_date);
@@ -275,7 +275,7 @@ class Recording
             if ($running_recordings > 0) {
                 return;
             }
-            echo "Temp file exists, but no recording process found. Will rename temp file and re-start recorgin...\n";
+            echo "Temp file exists, but no recording process found. Will rename temp file and re-start recording...\n";
             rename($temp_path, "$temp_path.1");
         }
 
@@ -300,7 +300,6 @@ class Recording
     }
 
     public function startRecording() {
-
         $temp_path = $this->getTempPath();
         if (file_exists($temp_path)) {
             // Recording is already ongoing
