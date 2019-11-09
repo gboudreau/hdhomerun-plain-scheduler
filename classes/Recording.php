@@ -271,7 +271,7 @@ class Recording
         $temp_path = $this->getTempPath();
         if (file_exists($temp_path)) {
             // Recording is already ongoing?
-            $running_recordings = exec("ps ax | grep -v grep | grep 'php bin/record.php' | grep " . escapeshellarg($this->getHash()) . " | wc -l");
+            $running_recordings = exec("ps ax | grep -v grep | grep 'bin/record.php' | grep " . escapeshellarg($this->getHash()) . " | wc -l");
             if ($running_recordings > 0) {
                 return;
             }
@@ -281,8 +281,8 @@ class Recording
 
         _log("Starting recording thread for $this->_serie (" . $this->getHash() . ") ...");
         $cmd = [
-            'php',
-            'bin/record.php',
+            Config::get('PHP_BIN'),
+            Config::get('CWD') . '/bin/record.php',
             escapeshellarg($this->getHash()),
             escapeshellarg(base64_encode(serialize($this))),
             '>>' . escapeshellarg(Config::get('LOG_FILE')),
