@@ -53,7 +53,13 @@ if (!empty($_GET['hash'])) {
 $epg = XMLTV::getEPGFromFile($recordings);
 $channels = $epg->channels;
 $programs = $epg->programs;
-$categories = $epg->categories;
+
+if($CONFIG->XMLTV_WITH_CATEGORIES) {
+	$categories = $epg->categories;
+} else {
+	$categories = [];
+}
+
 ?>
 
 <?php require 'head.inc.php' ?>

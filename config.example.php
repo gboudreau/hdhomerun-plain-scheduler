@@ -35,3 +35,6 @@ $CONFIG->CWD = dirname(__FILE__);
 
 // Channel ID format, depends on XMLTV file
 $CONFIG->CHANNEL_FORMAT = "%.1f";
+
+// If true, display categories filter
+$CONFIG->XMLTV_WITH_CATEGORIES = TRUE;
