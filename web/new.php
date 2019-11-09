@@ -54,10 +54,10 @@ $epg = XMLTV::getEPGFromFile($recordings);
 $channels = $epg->channels;
 $programs = $epg->programs;
 
-if($CONFIG->XMLTV_WITH_CATEGORIES) {
-	$categories = $epg->categories;
+if (Config::get('XMLTV_WITH_CATEGORIES', TRUE)) {
+    $categories = $epg->categories;
 } else {
-	$categories = [];
+    $categories = [];
 }
 
 ?>

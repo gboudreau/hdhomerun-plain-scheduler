@@ -281,8 +281,8 @@ class Recording
 
         _log("Starting recording thread for $this->_serie (" . $this->getHash() . ") ...");
         $cmd = [
-            Config::get('PHP_BIN'),
-            Config::get('CWD') . '/bin/record.php',
+            Config::get('PHP_BIN', 'php'),
+            Config::get('CWD', '.') . '/bin/record.php',
             escapeshellarg($this->getHash()),
             escapeshellarg(base64_encode(serialize($this))),
             '>>' . escapeshellarg(Config::get('LOG_FILE')),

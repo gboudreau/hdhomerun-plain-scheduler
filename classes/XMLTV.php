@@ -20,10 +20,10 @@ class XMLTV
             $epg_xml = simplexml_load_file(Config::get('XMLTV_FILE'));
 
             foreach ($epg_xml->channel as $channel) {
-                $id = sprintf(Config::get('CHANNEL_FORMAT'), (string) $channel->attributes()['id']);
+                $id = sprintf(Config::get('CHANNEL_FORMAT', '%.1f'), (string) $channel->attributes()['id']);
                 $channels[$id] = (string) $channel->{'display-name'};
             }
-			ksort($channels);
+            ksort($channels);
 
             foreach ($epg_xml->programme as $program) {
                 $start = strtotime((string) $program->attributes()['start']);
