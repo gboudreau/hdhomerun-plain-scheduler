@@ -27,5 +27,14 @@ $CONFIG->XMLTV_FILE = '/path/to/epg/data/xmltv.xml';
 // If defined, only keep a subset of the channels from the XMLTV data
 #$CONFIG->XMLTV_CHANNELS = [2.1, 6.1, 10.1, 12.1, 15.1, 17.1, 29.1];
 
+// Path to PHP binary
+$CONFIG->PHP_BIN = 'php';
+
+// Current working directory (installation path)
+$CONFIG->CWD = dirname(__FILE__);
+
+// Channel ID format, depends on XMLTV file
+$CONFIG->CHANNEL_FORMAT = "%.1f";
+
 // If true, display categories filter
-$CONFIG->XMLTV_WITH_CATEGORIES = true;
+$CONFIG->XMLTV_WITH_CATEGORIES = TRUE;
