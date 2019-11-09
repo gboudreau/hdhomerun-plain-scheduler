@@ -32,3 +32,6 @@ $CONFIG->PHP_BIN = 'php';
 
 // Current working directory (installation path)
 $CONFIG->CWD = dirname(__FILE__);
+
+// Channel ID format, depends on XMLTV file
+$CONFIG->CHANNEL_FORMAT = "%.1f";
