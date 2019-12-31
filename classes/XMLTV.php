@@ -32,7 +32,7 @@ class XMLTV
                     continue;
                 }
 
-                $channel = sprintf(Config::get('CHANNEL_FORMAT'), (string) $program->attributes()['channel']);
+                $channel = sprintf(Config::get('CHANNEL_FORMAT', '%.1f'), (string) $program->attributes()['channel']);
                 $title = (string) $program->title;
                 $episode_name = (string) $program->{'sub-title'};
                 $category = (string) $program->{'category'};
