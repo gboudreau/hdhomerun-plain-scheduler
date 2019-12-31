@@ -79,7 +79,19 @@ if (!empty($_GET['delete_hash'])) {
             </tr>
             <?php foreach ($recordings as $recording) : ?>
                 <tr class="<?php echo_if(!$recording->isEditable() && $recording->isComplete(), 'collapsible collapse') ?> <?php phe($recording->getClass()) ?>">
-                    <td><?php phe(date('Y-m-d H:i', $recording->getStartTimestamp())) ?></td>
+                    <td>
+                        <?php if (!empty($recording->getRepeats())) : ?>
+                            🔁
+                            <?php if ($recording->getRepeats() == 'weekly') : ?>
+                                <?php phe(date('D', $recording->getStartTimestamp())) ?>
+                            <?php else : ?>
+                                <?php phe(str_replace(' ', '-', ucwords(str_replace(['-', ','], [' ', ', '], $recording->getRepeats())))) ?>
+                            <?php endif; ?>
+                            <?php phe(" at " . date('H:i', $recording->getStartTimestamp())) ?>
+                        <?php else : ?>
+                            <?php phe(date('Y-m-d H:i', $recording->getStartTimestamp())) ?>
+                        <?php endif; ?>
+                    </td>
                     <td><?php phe($recording->getDurationAsString()) ?></td>
                     <td><?php phe($recording->getChannel()) ?></td>
                     <td><?php phe($recording->getName()) ?></td>
