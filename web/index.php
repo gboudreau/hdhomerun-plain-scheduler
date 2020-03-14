@@ -80,7 +80,7 @@ if (!empty($_GET['delete_hash'])) {
             <?php foreach ($recordings as $recording) : ?>
                 <tr class="<?php echo_if(!$recording->isEditable() && $recording->isComplete(), 'collapsible collapse') ?> <?php phe($recording->getClass()) ?>">
                     <td>
-                        <?php if (!empty($recording->getRepeats())) : ?>
+                        <?php if (!empty($recording->getRepeats()) && !$recording->isComplete()) : ?>
                             🔁
                             <?php if ($recording->getRepeats() == 'weekly') : ?>
                                 <?php phe(date('D', $recording->getStartTimestamp())) ?>
