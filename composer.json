@@ -3,7 +3,8 @@
     "php": "7.*",
     "ext-simplexml": "*",
     "ext-json": "*",
-    "ext-curl": "*"
+    "ext-curl": "*",
+    "ext-readline": "*"
   },
   "autoload": {
     "psr-4": { "GBoudreau\\HDHomeRun\\Scheduler\\": "classes/" }
