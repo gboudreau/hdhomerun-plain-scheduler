@@ -14,9 +14,12 @@
 // https://www.xmltvlistings.com/help/api/xmltv
 //
 
+//$GLOBALS['FLARESOLVERR_URL'] = 'http://192.168.155.88:8191/v1';
+//require_once '/home/gb/docker-services/_code/vendor/autoload.php';
+//require_once '/home/gb/docker-services/_code/functions.inc.php';
 
 $timezone = "America/Toronto";  // Set to your local timezone
-$lineUpID = "CAN-OTAH3P0A1";    // Set this to ID of the Line Up data you want to extract
+$lineUpID = "CAN-OTAH3P3K5";    // Set this to ID of the Line Up data you want to extract
 $days     = 8;                  // Number of days worth of guide data to collect (8 days max)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -40,11 +43,11 @@ $lineup_url = "https://www.tvtv.us/api/v1/lineup/$lineUpID/channels";
 $json = file_get_contents( $lineup_url );
 $lineup_data = json_decode( $json, true );
 
-$channels = "";
+$all_channels = [];
 foreach ( $lineup_data as &$channel )
 {
     // Build channel query string
-    $channels .= $channel["stationId"].",";
+    $all_channels[] = $channel["stationId"];
 
     // Channel data
     echo("<channel id=\"".$channel["channelNumber"]."\">");
@@ -64,9 +67,16 @@ for ( $day = 0; $day < $days; $day++)
     $end = strtotime ("now + ".($day + 1)." day" );
     $startTime = date ( 'Y-m-d\T04:00:00.000\Z', $now ); //"2023-05-23T04:00:00.000Z";
     $endTime = date ( 'Y-m-d\T03:59:00.000\Z', $end ); //"2023-05-24T03:59:00.000Z";
-    $listing_url = "https://www.tvtv.us/api/v1/lineup/".$lineUpID."/grid/".$startTime."/".$endTime."/".$channels;
-    $json = file_get_contents( $listing_url );
-    $listing_data = json_decode( $json, true );
+
+    // Load listing data in batches of 20 channels max; more than that will trigger a Cloudflare block
+    $listing_data = [];
+    for ($i = 0; $i <= count($all_channels); $i += 20) {
+        $channels = array_slice($all_channels, $i, 20);
+        $listing_url = "https://www.tvtv.us/api/v1/lineup/".$lineUpID."/grid/".$startTime."/".$endTime."/".implode(',', $channels);
+        $json = file_get_contents( $listing_url );
+        //$json = PommePause\DS\Http::get($listing_url, PommePause\DS\HttpOptions::GET()->useFlaresolverr(TRUE));
+        $listing_data = array_merge($listing_data, json_decode( $json, true ));
+    }
 
     $index = 0;
     foreach ( $lineup_data as &$channel )
