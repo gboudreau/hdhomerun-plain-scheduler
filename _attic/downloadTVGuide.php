@@ -15,8 +15,8 @@
 //
 
 //$GLOBALS['FLARESOLVERR_URL'] = 'http://192.168.155.88:8191/v1';
-//require_once '/home/gb/docker-services/_code/vendor/autoload.php';
-//require_once '/home/gb/docker-services/_code/functions.inc.php';
+//require_once __DIR__ . '/../../docker-services/_code/vendor/autoload.php';
+//require_once __DIR__ . '/../../docker-services/_code/functions.inc.php';
 
 $timezone = "America/Toronto";  // Set to your local timezone
 $lineUpID = "CAN-OTAH3P3K5";    // Set this to ID of the Line Up data you want to extract

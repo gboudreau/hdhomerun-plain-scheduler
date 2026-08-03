@@ -2,13 +2,12 @@
 
 set -e
 cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1
+cd ../tvtv_xmltv
 
-PHP=/usr/bin/php
-PHP_SCRIPT=./downloadTVGuide.php
 TARGET_DIR=/home/gb/bin/xmltv
 
 # Local Digital Broadcasts, Montréal
-$PHP ${PHP_SCRIPT} > ${TARGET_DIR}/xmltv-A_00132-temp.xml 2> /dev/null
+.venv/bin/python -m tvtv_xmltv --lineup CAN-OTAH3P3K5 --flaresolverr-url http://192.168.155.88:8191 --out ${TARGET_DIR}/xmltv-A_00132-temp.xml
 if [ "$(stat -c %s ${TARGET_DIR}/xmltv-A_00132-temp.xml)" -gt 500000 ]; then
     mv ${TARGET_DIR}/xmltv-A_00132-temp.xml ${TARGET_DIR}/xmltv-A_00132.xml
     sed -i'' -e 's/CBFTDT/CBFT-DT/' ${TARGET_DIR}/xmltv-A_00132.xml
